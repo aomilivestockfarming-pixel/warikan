@@ -162,6 +162,52 @@ body::before{
 .role-toggle.new{background:rgba(46,204,113,0.2);color:var(--green);}
 .role-toggle.women{background:rgba(255,105,180,0.2);color:#ff85b3;}
 .role-toggle.host{background:rgba(245,200,66,0.2);color:var(--gold);}
+/* ── ROLE CARDS (improved) ── */
+.name-list{display:flex;flex-direction:column;gap:8px;margin-top:10px;}
+.name-tag{
+  display:flex;align-items:center;gap:10px;
+  background:var(--card2);border:2px solid var(--border);
+  border-radius:12px;padding:10px 12px;
+  transition:border-color .2s;
+}
+.name-tag input{
+  background:transparent;border:none;color:var(--text);
+  font-family:'Noto Sans JP',sans-serif;font-size:1rem;font-weight:700;
+  width:70px;outline:none;
+}
+.name-num{
+  font-size:0.7rem;color:var(--muted);font-weight:700;
+  min-width:20px;
+}
+.role-btns{display:flex;gap:4px;margin-left:auto;}
+.role-btn{
+  border:none;border-radius:8px;cursor:pointer;
+  padding:5px 8px;font-size:0.72rem;font-weight:700;
+  background:rgba(255,255,255,0.06);color:var(--muted);
+  transition:background .15s,color .15s,transform .1s;
+  white-space:nowrap;
+}
+.role-btn:active{transform:scale(0.92);}
+.role-btn.active-host{background:rgba(245,200,66,0.25);color:var(--gold);border:1px solid rgba(245,200,66,0.4);}
+.role-btn.active-new{background:rgba(46,204,113,0.25);color:var(--green);border:1px solid rgba(46,204,113,0.4);}
+.role-btn.active-women{background:rgba(255,133,179,0.25);color:#ff85b3;border:1px solid rgba(255,133,179,0.4);}
+.role-discount{font-size:0.6rem;opacity:0.7;}
+.role-rate-row{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:10px;
+}
+.role-rate-label{
+  font-size:0.8rem;font-weight:700;min-width:52px;
+}
+.role-rate-slider{
+  flex:1;-webkit-appearance:none;appearance:none;
+  height:6px;border-radius:3px;outline:none;cursor:pointer;
+}
+.role-rate-val{
+  font-family:'Zen Dots',monospace;font-size:0.95rem;font-weight:700;
+  min-width:44px;text-align:right;
+}
+
 
 /* ── MODE CARDS ── */
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;}
@@ -374,6 +420,16 @@ body::before{
 }
 @keyframes zoomIn{from{opacity:0;transform:scale(0.3)}to{opacity:1;transform:scale(1)}}
 .spin-confirmed{font-size:1.5rem;color:var(--fire2);margin-top:8px;display:none;}
+.spin-slot{
+  font-family:'Black Han Sans',sans-serif;
+  font-size:3.2rem;
+  color:var(--text);
+  letter-spacing:2px;
+  min-height:70px;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .08s;
+  text-shadow:0 0 20px rgba(255,149,0,0.6);
+}
 
 /* ── CONFETTI ── */
 .confetti-piece{
@@ -534,9 +590,15 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
     <div class="card">
       <div class="card-title">✏️ 名前入力（タップで変更）</div>
       <div class="name-list" id="nameList"></div>
-      <p class="hint mt8">役割ボタンで <span style="color:var(--gold)">幹事</span>・<span style="color:var(--green)">新人</span>・<span style="color:#ff85b3">女性</span> を設定すると軽減が自動適用されます</p>
+      <p class="hint mt8">役割をタップで切替・もう一度タップで解除</p>
     </div>
   </div>
+    <div class="card" id="roleRateCard">
+      <div class="card-title">⚙️ 役割別の負担率</div>
+      <div id="roleRateList"></div>
+      <p class="hint">100%=割引なし／数字が小さいほど少ない負担</p>
+    </div>
+
 
   <!-- SCREEN 3: モード選択 -->
   <div class="screen" id="s3">
@@ -546,7 +608,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
         <div class="mode-card" id="mode_normal" onclick="selectMode('normal')">
           <span class="mode-icon">🧮</span>
           <div class="mode-name">通常割り勘</div>
-          <div class="mode-desc">シンプルに均等</div>
+          <div class="mode-desc">均等 or ％指定</div>
         </div>
         <div class="mode-card" id="mode_otoko" onclick="selectMode('otoko')">
           <span class="mode-icon">🔥</span>
@@ -563,16 +625,31 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
           <div class="mode-name">ルーレット</div>
           <div class="mode-desc">演出で盛り上がる</div>
         </div>
-        <div class="mode-card" id="mode_percent" onclick="selectMode('percent')"
-             style="grid-column:1/-1;display:flex;align-items:center;gap:14px;text-align:left;padding:14px 16px;">
-          <span class="mode-icon" style="margin-bottom:0;font-size:1.8rem;">📊</span>
-          <div>
-            <div class="mode-name">個別％指定割り</div>
-            <div class="mode-desc">1人ずつ負担率をスライダーで設定</div>
-          </div>
+        <div class="mode-card" id="mode_kurohige" onclick="selectMode('kurohige')">
+          <span class="mode-icon">🗡️</span>
+          <div class="mode-name">黒ひげ危機一髪</div>
+          <div class="mode-desc">刺した人が払う</div>
         </div>
       </div>
     </div>
+
+    <!-- 通常割り勘サブ -->
+    <div class="card" id="normalSubCard" style="display:none;">
+      <div class="card-title">🧮 割り勘の方法</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+        <div class="otoko-card" id="ns_equal" onclick="selectNormalType('equal')">
+          <span class="oc-icon">⚖️</span>
+          <div class="oc-name">均等割り</div>
+          <div class="oc-desc">シンプルに山分け</div>
+        </div>
+        <div class="otoko-card" id="ns_percent" onclick="selectNormalType('percent')">
+          <span class="oc-icon">📊</span>
+          <div class="oc-name">個別％指定</div>
+          <div class="oc-desc">スライダーで設定</div>
+        </div>
+      </div>
+    </div>
+
 
     <!-- 個別%設定パネル -->
     <div class="card" id="percentCard" style="display:none;">
@@ -590,7 +667,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
 
     <!-- 負け負担率カード (amida/roulette 通常モード時) -->
     <div class="card" id="loserPctCard" style="display:none;">
-      <div class="card-title">💸 負けた人の負担率</div>
+      <div class="card-title">💸 負け・刺した人の負担率</div>
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
         <input type="range" id="loserPctSlider" min="20" max="90" step="5" value="50"
           style="-webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:3px;outline:none;cursor:pointer;background:linear-gradient(to right,var(--fire) 0%,var(--fire) 50%,var(--card2) 50%,var(--card2) 100%);"
@@ -654,6 +731,20 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
     </div>
   </div>
 
+  <!-- SCREEN 4: 黒ひげ危機一髪 -->
+  <div class="screen" id="s4kurohige">
+    <div style="padding:16px 16px 0;">
+      <div style="text-align:center;margin-bottom:10px;">
+        <div id="kuroTitle" style="font-family:'Black Han Sans',sans-serif;font-size:1.3rem;background:linear-gradient(135deg,var(--fire),var(--fire2),var(--gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;">🗡️ 黒ひげ危機一髪</div>
+        <div id="kuroTurnName" style="font-size:1rem;font-weight:700;color:var(--text);margin-top:6px;min-height:28px;"></div>
+        <div id="kuroTurnHint" style="font-size:0.72rem;color:var(--muted);margin-top:2px;">剣を1本選んで刺してください</div>
+      </div>
+      <div style="display:flex;justify-content:center;margin-bottom:14px;">
+        <canvas id="kuroCanvas" style="display:block;"></canvas>
+      </div>
+    </div>
+  </div>
+
   <!-- SCREEN 4: あみだくじ -->
   <div class="screen" id="s4amida">
     <div style="padding:16px 16px 0;">
@@ -698,6 +789,7 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
 <div id="spinOverlay">
   <div class="spin-text" id="spinText">🎯 回転中…</div>
   <div class="spin-dots" id="spinDots">・・・</div>
+  <div class="spin-slot" id="spinSlot" style="display:none;"></div>
   <div class="spin-name" id="spinName"></div>
   <div class="spin-confirmed" id="spinConfirmed"></div>
 </div>
@@ -732,6 +824,8 @@ const state = {
   heroIdx: null,    // 男気担当
   hero2Idx: null,   // 2人目男気
   loserPct: 50,     // あみだ/ルーレット 負け人の負担率(%)
+  normalType: null,   // 'equal' | 'percent'
+  roleRates: { host: 50, new: 80, women: 90 }, // 負担率% (100=割引なし)
 };
 
 const STEP_LABELS = ['金額入力','人数・名前','モード選択','対決！','結果'];
@@ -776,11 +870,17 @@ function nextStep() {
     if((state.mode==='otoko') && !state.method){toast('決め方を選んでください');return;}
 
     if(state.mode==='normal') {
-      calcNormal(); state.step=5; updateStepUI(); showScreen('s5');
+      if(state.normalType==='percent') {
+        calcPercent();
+      } else {
+        calcNormal();
+      }
+      playSfx('fanfare'); playSfx('applause');
+      state.step=5; updateStepUI(); showScreen('s5');
       document.getElementById('nextBtn').style.display='none';
-    } else if(state.mode==='percent') {
-      calcPercent(); state.step=5; updateStepUI(); showScreen('s5');
-      document.getElementById('nextBtn').style.display='none';
+    } else if(state.mode==='kurohige') {
+      state.step=4; updateStepUI(); showScreen('s4kurohige');
+      initKurohige(); setupKurohigeBottom();
     } else if(state.mode==='amida') {
       state.step=4; updateStepUI(); showScreen('s4amida');
       initAmida(); setupAmidaBottom();
@@ -789,7 +889,7 @@ function nextStep() {
       initRoulette(); setupRouletteBottom();
     } else if(state.mode==='otoko') {
       if(state.method==='random') {
-        runRandom(); showResultAfterAnim();
+        runRandomWithAnim();
       } else if(state.method==='amida') {
         state.step=4; updateStepUI(); showScreen('s4amida');
         initAmida(true); setupAmidaBottom();
@@ -846,13 +946,20 @@ function buildNameList() {
   list.innerHTML = '';
   for(let i=0;i<n;i++) {
     const tag = document.createElement('div');
-    tag.className='name-tag';
-    const roleLabel = {'':{l:'役割',cls:''},'host':{l:'幹事',cls:'host'},'new':{l:'新人',cls:'new'},'women':{l:'女性',cls:'women'}}[state.roles[i]];
+    tag.className = 'name-tag';
+    const r = state.roles[i] || '';
+    if(r==='host') tag.style.borderColor='rgba(245,200,66,0.4)';
+    else if(r==='new') tag.style.borderColor='rgba(46,204,113,0.4)';
+    else if(r==='women') tag.style.borderColor='rgba(255,133,179,0.4)';
+    else tag.style.borderColor='';
     tag.innerHTML = `
-      <input value="${state.names[i]}" onchange="state.names[${i}]=this.value" style="width:52px">
-      <button class="role-toggle ${roleLabel.cls}" onclick="cycleRole(${i})">
-        ${roleLabel.l}
-      </button>`;
+      <span class="name-num">${i+1}</span>
+      <input value="${state.names[i]}" onchange="state.names[${i}]=this.value">
+      <div class="role-btns">
+        <button class="role-btn ${r==='host'?'active-host':''}" onclick="setRole(${i},'host')">👑幹事<span class="role-discount"> ${state.roleRates.host}%</span></button>
+        <button class="role-btn ${r==='new'?'active-new':''}" onclick="setRole(${i},'new')">🌱新人<span class="role-discount"> ${state.roleRates.new}%</span></button>
+        <button class="role-btn ${r==='women'?'active-women':''}" onclick="setRole(${i},'women')">🌸女性<span class="role-discount"> ${state.roleRates.women}%</span></button>
+      </div>`;
     list.appendChild(tag);
   }
 }
@@ -863,6 +970,45 @@ function cycleRole(i) {
   state.roles[i] = order[(cur+1)%order.length];
   buildNameList();
 }
+function setRole(i, role) {
+  state.roles[i] = state.roles[i] === role ? '' : role;
+  buildNameList();
+}
+// ─────────────────────────────────────────────
+// ROLE RATES UI
+// ─────────────────────────────────────────────
+function buildRoleRateUI() {
+  const container = document.getElementById('roleRateList');
+  if (!container) return;
+  const defs = [
+    { key: 'host', label: '👑 幹事', color: 'var(--gold)' },
+    { key: 'new',  label: '🌱 新人', color: 'var(--green)' },
+    { key: 'women',label: '🌸 女性', color: '#ff85b3' },
+  ];
+  container.innerHTML = '';
+  defs.forEach(({ key, label, color }) => {
+    const val = state.roleRates[key];
+    const row = document.createElement('div');
+    row.className = 'role-rate-row';
+    row.innerHTML = `
+      <span class="role-rate-label" style="color:${color}">${label}</span>
+      <input type="range" class="role-rate-slider" min="10" max="100" step="5" value="${val}"
+        style="background:linear-gradient(to right,${color} 0%,${color} ${val}%,var(--card2) ${val}%,var(--card2) 100%)"
+        oninput="onRoleRateChange('${key}',+this.value,this)">
+      <span class="role-rate-val" style="color:${color}" id="rateVal_${key}">${val}%</span>`;
+    container.appendChild(row);
+  });
+}
+
+function onRoleRateChange(key, val, slider) {
+  state.roleRates[key] = val;
+  document.getElementById('rateVal_' + key).textContent = val + '%';
+  const color = key==='host' ? 'var(--gold)' : key==='new' ? 'var(--green)' : '#ff85b3';
+  slider.style.background = `linear-gradient(to right,${color} 0%,${color} ${val}%,var(--card2) ${val}%,var(--card2) 100%)`;
+  // 名前リストの%表示も更新
+  buildNameList();
+}
+
 
 function collectNames() {
   // names already updated via onchange
@@ -873,15 +1019,29 @@ function collectNames() {
 // ─────────────────────────────────────────────
 function selectMode(m) {
   state.mode = m;
+  // normalを選んだ時はサブタイプをリセット
+  if(m==='normal') { state.normalType = null; }
   document.querySelectorAll('.mode-card').forEach(c=>c.classList.remove('selected'));
   document.getElementById('mode_'+m).classList.add('selected');
   document.getElementById('otokoSubCard').style.display = m==='otoko' ? 'block' : 'none';
   document.getElementById('methodCard').style.display = m==='otoko' ? 'block' : 'none';
-  document.getElementById('percentCard').style.display = m==='percent' ? 'block' : 'none';
-  const showLoserPct = (m==='amida' || m==='roulette');
+  document.getElementById('normalSubCard').style.display = m==='normal' ? 'block' : 'none';
+  // percentCardはnormal+percent選択時のみ
+  document.getElementById('percentCard').style.display = (m==='normal' && state.normalType==='percent') ? 'block' : 'none';
+  const showLoserPct = (m==='amida' || m==='roulette' || m==='kurohige');
   document.getElementById('loserPctCard').style.display = showLoserPct ? 'block' : 'none';
   if(showLoserPct) updateLoserPctPreview();
-  if(m==='percent') buildPctList();
+  validateStep3();
+}
+
+function selectNormalType(t) {
+  state.normalType = t;
+  document.querySelectorAll('.otoko-card').forEach(c=>{
+    if(c.id==='ns_equal'||c.id==='ns_percent') c.classList.remove('selected');
+  });
+  document.getElementById('ns_'+t).classList.add('selected');
+  document.getElementById('percentCard').style.display = t==='percent' ? 'block' : 'none';
+  if(t==='percent') buildPctList();
   validateStep3();
 }
 
@@ -923,9 +1083,9 @@ function updateLoserPctPreview() {
 
   const roleAmts = {
     '': base,
-    'host': Math.round(base * 0.5),
-    'new': Math.round(base * 0.7),
-    'women': Math.round(base * 0.8),
+    'host': Math.round(base * (state.roleRates.host/100)),
+    'new': Math.round(base * (state.roleRates.new/100)),
+    'women': Math.round(base * (state.roleRates.women/100)),
   };
   const roleLabel = {'': '通常', 'host': '幹事', 'new': '新人', 'women': '女性'};
 
@@ -949,7 +1109,7 @@ function calcLoserPenalty(loserIdx) {
   const weights = state.names.map((_, i) => {
     if (i === loserIdx) return 0;
     const r = state.roles[i] || '';
-    return r === 'host' ? 0.5 : r === 'new' ? 0.7 : r === 'women' ? 0.8 : 1.0;
+    return r === 'host' ? (state.roleRates.host/100) : r === 'new' ? (state.roleRates.new/100) : r === 'women' ? (state.roleRates.women/100) : 1.0;
   });
   const totalWeight = weights.reduce((a, v) => a + v, 0) || 1;
   const amounts = state.names.map((_, i) => {
@@ -969,6 +1129,9 @@ function validateStep3() {
   const btn = document.getElementById('nextBtn');
   btn.style.display='';
   if(!state.mode){btn.disabled=true;return;}
+  if(state.mode==='normal') {
+    if(!state.normalType){btn.disabled=true;return;}
+  }
   if(state.mode==='otoko') {
     if(!state.otokoType||!state.method){btn.disabled=true;return;}
     if(state.otokoType==='plus') {
@@ -976,7 +1139,7 @@ function validateStep3() {
       if(!state.extra){btn.disabled=true;return;}
     }
   }
-  if(state.mode==='percent') {
+  if(state.mode==='normal' && state.normalType==='percent') {
     const sum = (state.pcts||[]).reduce((a,v)=>a+v,0);
     if(Math.round(sum)!==100){btn.disabled=true;return;}
   }
@@ -987,7 +1150,7 @@ function validateStep3() {
 // CALC
 // ─────────────────────────────────────────────
 function getReductions() {
-  // host: free, new: 70%, women: 80%
+  // rates from state.roleRates
   const total = state.total;
   let reduction = 0;
   state.roles.forEach(r=>{
@@ -1003,13 +1166,12 @@ function calcNormal() {
   const base = Math.floor(total / n);
   const rem = total - base * n;
   let amounts = state.names.map((_,i)=>{
-    if(state.roles[i]==='host') return Math.round(base*0.5);
-    if(state.roles[i]==='new') return Math.round(base*0.7);
-    if(state.roles[i]==='women') return Math.round(base*0.8);
+    const rr = state.roleRates;
+    if(state.roles[i]==='host') return Math.round(base*(rr.host/100));
+    if(state.roles[i]==='new') return Math.round(base*(rr.new/100));
+    if(state.roles[i]==='women') return Math.round(base*(rr.women/100));
     return base + (i<rem?1:0);
   });
-  playSfx('fanfare'); // ファンファーレ（通常割り勘結果）
-  playSfx('applause'); // 大勢で拍手
   renderResult(null, amounts, '通常割り勘');
 }
 
@@ -1017,9 +1179,10 @@ function calcOtoko(heroIdx, hero2Idx=null) {
   const n = state.people, total = state.total;
   const base = Math.floor(total / n);
   let amounts = state.names.map((_,i)=>{
-    if(state.roles[i]==='host') return Math.round(base*0.5);
-    if(state.roles[i]==='new') return Math.round(base*0.7);
-    if(state.roles[i]==='women') return Math.round(base*0.8);
+    const rr = state.roleRates;
+    if(state.roles[i]==='host') return Math.round(base*(rr.host/100));
+    if(state.roles[i]==='new') return Math.round(base*(rr.new/100));
+    if(state.roles[i]==='women') return Math.round(base*(rr.women/100));
     return base;
   });
 
@@ -1161,6 +1324,89 @@ function runRandom() {
     do { h2=Math.floor(Math.random()*n); } while(h2===hi);
   }
   state.heroIdx=hi; state.hero2Idx=h2;
+}
+
+function runRandomWithAnim() {
+  // 先に結果を決定
+  runRandom();
+  const target = state.heroIdx;
+
+  const overlay = document.getElementById('spinOverlay');
+  const txt     = document.getElementById('spinText');
+  const dots    = document.getElementById('spinDots');
+  const slot    = document.getElementById('spinSlot');
+  const nameEl  = document.getElementById('spinName');
+  const conf    = document.getElementById('spinConfirmed');
+
+  overlay.classList.add('show');
+  txt.style.display  = 'block';
+  dots.style.display = 'none';
+  slot.style.display = 'flex';
+  nameEl.style.display = 'none';
+  conf.style.display   = 'none';
+  txt.textContent = '🎰 男気は誰だ…';
+
+  playSfx('heartbeat');
+
+  const names = state.names;
+  const n = names.length;
+  let frame = 0;
+
+  // 高速→減速のインターバルスケジュール
+  // 最初は30ms、最後は300msに近づく
+  const totalFrames = 28 + n * 4;
+  let currentIdx = Math.floor(Math.random() * n);
+
+  function spinStep() {
+    // 表示する名前をランダムにスロット表示
+    currentIdx = (currentIdx + 1) % n;
+    slot.textContent = names[currentIdx];
+
+    // 目標に近づいたら色を変える
+    const remaining = totalFrames - frame;
+    if (remaining <= 6) {
+      slot.style.color = 'var(--fire2)';
+      slot.style.textShadow = '0 0 30px rgba(255,78,0,0.9)';
+    } else {
+      slot.style.color = 'var(--text)';
+      slot.style.textShadow = '0 0 20px rgba(255,149,0,0.6)';
+    }
+
+    frame++;
+    if (frame < totalFrames) {
+      // 徐々に減速（easeOut的に）
+      const t = frame / totalFrames;
+      const delay = 40 + Math.pow(t, 2.2) * 340;
+      setTimeout(spinStep, delay);
+    } else {
+      // 最後はターゲットの名前でピタッと止める
+      slot.textContent = names[target];
+      slot.style.color = 'var(--fire)';
+      slot.style.textShadow = '0 0 40px rgba(255,78,0,1)';
+      stopSfx('heartbeat');
+      playSfx('shock');
+
+      setTimeout(() => {
+        slot.style.display = 'none';
+        txt.style.display  = 'none';
+        nameEl.textContent = names[target] + '🔥';
+        nameEl.style.display = 'block';
+        conf.textContent = '男気確定！';
+        conf.style.display = 'block';
+        launchConfetti();
+        playSfx('fanfare');
+        playSfx('applause');
+        setTimeout(() => {
+          overlay.classList.remove('show');
+          calcOtoko(state.heroIdx, state.hero2Idx);
+          state.step = 5; updateStepUI(); showScreen('s5');
+          document.getElementById('nextBtn').style.display = 'none';
+        }, 4000);
+      }, 600);
+    }
+  }
+
+  spinStep();
 }
 
 function showResultAfterAnim() {
@@ -1576,6 +1822,261 @@ function setupAmidaBottom() {
 }
 
 // ─────────────────────────────────────────────
+// 黒ひげ危機一髪
+// ─────────────────────────────────────────────
+let kuroSlots = [];      // [{idx, safe, pushed, owner}]
+let kuroTurnOrder = [];  // player indices でループ
+let kuroTurnIdx = 0;
+let kuroBombSlot = -1;
+let kuroIsOtoko = false;
+let kuroExploded = false;
+
+const KURO_COLORS = ['#ff4e00','#3a8ef5','#2ecc71','#f5c842','#9b59b6','#e91e63','#1abc9c','#ff5722','#00c9e8','#e67e22'];
+
+function initKurohige(forOtoko = false) {
+  kuroIsOtoko = forOtoko;
+  kuroExploded = false;
+  kuroTurnIdx = 0;
+  kuroTurnOrder = [...Array(state.people).keys()];
+
+  const totalSlots = Math.max(8, state.people * 2);
+  kuroBombSlot = Math.floor(Math.random() * totalSlots);
+  kuroSlots = Array.from({ length: totalSlots }, (_, i) => ({
+    idx: i, pushed: false, owner: null
+  }));
+
+  setupKuroCanvas();
+  drawKuro();
+  updateKuroTurn();
+}
+
+function setupKuroCanvas() {
+  const canvas = document.getElementById('kuroCanvas');
+  const size = Math.min(320, window.innerWidth * 0.9);
+  canvas.width = size;
+  canvas.height = Math.round(size * 1.1);
+  canvas.onclick = onKuroClick;
+}
+
+function getKuroDims() {
+  const canvas = document.getElementById('kuroCanvas');
+  const W = canvas.width, H = canvas.height;
+  const n = kuroSlots.length;
+  const cols = n <= 8 ? 4 : n <= 12 ? 4 : 5;
+  const rows = Math.ceil(n / cols);
+  const barrelR = Math.min(W * 0.32, 90);
+  const barrelCX = W / 2;
+  const barrelCY = H * 0.52;
+  return { W, H, n, cols, rows, barrelR, barrelCX, barrelCY };
+}
+
+function slotPos(i) {
+  const { W, H, n, cols, rows, barrelR, barrelCX, barrelCY } = getKuroDims();
+  // 樽の周囲に円形に配置
+  const angle = (i / n) * Math.PI * 2 - Math.PI / 2;
+  const r = barrelR + 38;
+  return {
+    x: barrelCX + Math.cos(angle) * r,
+    y: barrelCY + Math.sin(angle) * r,
+    angle
+  };
+}
+
+function drawKuro(shakeFrame) {
+  const canvas = document.getElementById('kuroCanvas');
+  const ctx = canvas.getContext('2d');
+  const { W, H, n, barrelR, barrelCX, barrelCY } = getKuroDims();
+
+  ctx.clearRect(0, 0, W, H);
+
+  // 樽の揺れオフセット
+  const sx = shakeFrame ? (Math.random() - 0.5) * 14 : 0;
+  const sy = shakeFrame ? (Math.random() - 0.5) * 8 : 0;
+
+  // 樽ボディ
+  ctx.save();
+  ctx.translate(barrelCX + sx, barrelCY + sy);
+
+  // 樽の胴体
+  ctx.beginPath();
+  ctx.ellipse(0, 0, barrelR, barrelR * 1.2, 0, 0, Math.PI * 2);
+  ctx.fillStyle = '#8B5E3C';
+  ctx.shadowBlur = 20; ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // 樽の板目（縦線）
+  for(let i = -3; i <= 3; i++) {
+    const x = i * (barrelR * 0.28);
+    if(Math.abs(x) > barrelR * 0.95) continue;
+    const hw = Math.sqrt(Math.max(0, barrelR*barrelR - x*x)) * 1.18;
+    ctx.beginPath();
+    ctx.moveTo(x, -hw); ctx.lineTo(x, hw);
+    ctx.strokeStyle = 'rgba(0,0,0,0.15)'; ctx.lineWidth = 1.5;
+    ctx.stroke();
+  }
+
+  // 樽のたが（横帯）
+  [-barrelR*0.55, 0, barrelR*0.55].forEach(oy => {
+    ctx.beginPath();
+    ctx.ellipse(0, oy * 1.0, barrelR * 0.98, barrelR * 0.18, 0, 0, Math.PI * 2);
+    ctx.strokeStyle = '#4a3218';
+    ctx.lineWidth = 5;
+    ctx.stroke();
+    ctx.strokeStyle = '#6b4a28';
+    ctx.lineWidth = 3;
+    ctx.stroke();
+  });
+
+  // 海賊の顔 or 爆発
+  if(kuroExploded) {
+    ctx.font = `${barrelR * 0.8}px serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('💥', 0, -barrelR * 0.3);
+  } else {
+    // 覗き窓
+    ctx.beginPath();
+    ctx.ellipse(0, -barrelR * 0.1, barrelR * 0.38, barrelR * 0.42, 0, 0, Math.PI * 2);
+    ctx.fillStyle = '#2a1a08';
+    ctx.fill();
+    // 目
+    [[-barrelR*0.12, -barrelR*0.18], [barrelR*0.12, -barrelR*0.18]].forEach(([ex, ey]) => {
+      ctx.beginPath();
+      ctx.arc(ex, ey, barrelR * 0.07, 0, Math.PI * 2);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(ex + 1, ey + 1, barrelR * 0.04, 0, Math.PI * 2);
+      ctx.fillStyle = '#222';
+      ctx.fill();
+    });
+  }
+
+  ctx.restore();
+
+  // 剣スロット（樽周囲に配置）
+  kuroSlots.forEach((slot, i) => {
+    const pos = slotPos(i);
+    const pushed = slot.pushed;
+    const isAvail = !pushed && !kuroExploded;
+    const color = pushed && slot.owner !== null ? KURO_COLORS[slot.owner % KURO_COLORS.length] : '#aaa';
+
+    ctx.save();
+    ctx.translate(pos.x, pos.y);
+    ctx.rotate(pos.angle + Math.PI / 2);
+
+    // 剣ハンドル
+    ctx.beginPath();
+    ctx.roundRect(-6, pushed ? -2 : -14, 12, pushed ? 14 : 14, 3);
+    ctx.fillStyle = isAvail ? '#c8a96e' : (pushed ? color : '#555');
+    if(isAvail) { ctx.shadowBlur = 8; ctx.shadowColor = 'rgba(200,169,110,0.5)'; }
+    ctx.fill();
+    ctx.shadowBlur = 0;
+
+    // 鍔
+    ctx.beginPath();
+    ctx.roundRect(-9, pushed ? -4 : -16, 18, 4, 2);
+    ctx.fillStyle = isAvail ? '#a07040' : (pushed ? color : '#444');
+    ctx.fill();
+
+    // 刃（刺した時は短く）
+    if(pushed) {
+      ctx.beginPath();
+      ctx.moveTo(-2, -4); ctx.lineTo(2, -4); ctx.lineTo(0, -22);
+      ctx.fillStyle = 'rgba(200,220,255,0.4)';
+      ctx.fill();
+    }
+
+    ctx.restore();
+
+    // 番号 or オーナー名
+    if(!pushed && !kuroExploded) {
+      ctx.font = 'bold 10px Noto Sans JP';
+      ctx.fillStyle = 'rgba(255,255,255,0.5)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(i + 1, pos.x, pos.y + 20);
+    }
+  });
+}
+
+function onKuroClick(e) {
+  if(kuroExploded) return;
+  const canvas = document.getElementById('kuroCanvas');
+  const rect = canvas.getBoundingClientRect();
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  const cx = (e.clientX - rect.left) * scaleX;
+  const cy = (e.clientY - rect.top) * scaleY;
+
+  // タップした剣スロットを判定
+  let hit = -1;
+  kuroSlots.forEach((slot, i) => {
+    if(slot.pushed) return;
+    const pos = slotPos(i);
+    const dx = cx - pos.x, dy = cy - pos.y;
+    if(Math.sqrt(dx*dx + dy*dy) < 28) hit = i;
+  });
+
+  if(hit < 0) return;
+  const playerIdx = kuroTurnOrder[kuroTurnIdx % kuroTurnOrder.length];
+  kuroSlots[hit].pushed = true;
+  kuroSlots[hit].owner = playerIdx;
+  playSfx('decide');
+
+  if(hit === kuroBombSlot) {
+    // 爆発！
+    kuroExploded = true;
+    playSfx('shock');
+    state.heroIdx = playerIdx;
+    state.hero2Idx = null;
+
+    // 樽揺れアニメ
+    let shakeCount = 0;
+    const iv = setInterval(() => {
+      drawKuro(true);
+      if(++shakeCount >= 10) {
+        clearInterval(iv);
+        kuroExploded = true;
+        drawKuro(false);
+        document.getElementById('kuroTurnName').textContent = `💥 ${state.names[playerIdx]} が爆発！`;
+        document.getElementById('kuroTurnHint').textContent = '負け確定...';
+        setTimeout(() => {
+          if(kuroIsOtoko) {
+            showResultAfterAnim();
+          } else {
+            playSfx('fanfare'); playSfx('applause'); launchConfetti();
+            setTimeout(() => {
+              const amounts = calcLoserPenalty(playerIdx);
+              renderResult(playerIdx, amounts, '黒ひげ負け');
+              state.step=5; updateStepUI(); showScreen('s5');
+              document.getElementById('nextBtn').style.display='none';
+            }, 4000);
+          }
+        }, 1500);
+      }
+    }, 70);
+  } else {
+    // セーフ
+    drawKuro(false);
+    kuroTurnIdx++;
+    updateKuroTurn();
+  }
+}
+
+function updateKuroTurn() {
+  if(kuroExploded) return;
+  const playerIdx = kuroTurnOrder[kuroTurnIdx % kuroTurnOrder.length];
+  document.getElementById('kuroTurnName').textContent = `👉 ${state.names[playerIdx]} の番`;
+  document.getElementById('kuroTurnHint').textContent = '剣を1本選んで刺してください';
+}
+
+function setupKurohigeBottom() {
+  document.getElementById('nextBtn').style.display = 'none';
+}
+
+// ─────────────────────────────────────────────
 // ROULETTE
 // ─────────────────────────────────────────────
 let rouletteOtoko=false;
@@ -1900,7 +2401,8 @@ function shareToLine() {
 }
 
 function resetAll() {
-  Object.assign(state,{step:1,total:0,people:4,names:[],roles:[],mode:null,otokoType:null,extra:0,method:null,heroIdx:null,hero2Idx:null});
+  Object.assign(state,{step:1,total:0,people:4,names:[],roles:[],mode:null,normalType:null,otokoType:null,extra:0,method:null,heroIdx:null,hero2Idx:null,loserPct:50,roleRates:{host:50,new:80,women:90}});
+  buildRoleRateUI();
   document.getElementById('totalInput').value='';
   document.getElementById('nextBtn').textContent='次へ →';
   document.getElementById('nextBtn').style.display='';
@@ -1997,6 +2499,7 @@ function stopSfx(name) {
 document.addEventListener('DOMContentLoaded',()=>{
   validateStep1();
   buildNameList();
+  buildRoleRateUI();
   updateStepUI();
 });
 </script>
