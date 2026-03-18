@@ -217,93 +217,6 @@ body::before{
 .method-card .mc-icon{font-size:1.6rem;margin-bottom:4px;display:block;}
 .method-card .mc-name{font-size:0.68rem;font-weight:700;}
 
-/* ── JANKEN – blind turn ── */
-.jk-progress{
-  display:flex;gap:6px;justify-content:center;margin-bottom:18px;
-}
-.jk-prog-dot{
-  width:10px;height:10px;border-radius:50%;
-  background:var(--card2);border:2px solid var(--border);
-  transition:background .3s,border-color .3s;
-}
-.jk-prog-dot.done{background:var(--green);border-color:var(--green);}
-.jk-prog-dot.active{background:var(--fire);border-color:var(--fire);}
-
-.jk-turn-card{
-  background:linear-gradient(135deg,rgba(255,78,0,0.12),rgba(255,149,0,0.06));
-  border:2px solid rgba(255,78,0,0.3);
-  border-radius:16px;padding:22px 16px;text-align:center;
-  margin-bottom:22px;
-}
-.jk-turn-label{font-size:0.72rem;color:var(--fire2);font-weight:700;letter-spacing:3px;margin-bottom:8px;}
-.jk-turn-name{
-  font-family:'Black Han Sans',sans-serif;font-size:2.4rem;
-  background:linear-gradient(135deg,var(--fire),var(--fire2),var(--gold));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-  margin-bottom:6px;
-}
-.jk-turn-round{font-size:0.72rem;color:var(--muted);}
-
-.jk-choices{
-  display:flex;justify-content:center;gap:14px;margin-bottom:18px;
-}
-.jk-btn{
-  width:90px;height:90px;border-radius:16px;border:2px solid var(--border);
-  background:var(--card2);cursor:pointer;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:4px;font-size:2.4rem;
-  transition:border-color .15s,transform .1s,background .15s;
-}
-.jk-btn span{font-size:0.62rem;color:var(--muted);font-family:'Noto Sans JP',sans-serif;}
-.jk-btn:active{transform:scale(0.88);}
-.jk-btn.chosen{
-  border-color:var(--fire);
-  background:rgba(255,78,0,0.15);
-  box-shadow:0 0 16px rgba(255,78,0,0.3);
-}
-.jk-btn:disabled{opacity:0.3;pointer-events:none;}
-
-.jk-picked-msg{
-  text-align:center;padding:28px 20px;
-  animation:fadeUp .3s ease;
-}
-.jk-picked-icon{font-size:3.5rem;margin-bottom:12px;}
-.jk-picked-text{
-  font-size:1rem;font-weight:700;color:var(--text);
-  line-height:1.7;margin-bottom:22px;
-}
-.jk-next-btn{
-  width:100%;padding:16px;border-radius:12px;border:none;cursor:pointer;
-  font-family:'Black Han Sans',sans-serif;font-size:1rem;letter-spacing:2px;
-  background:linear-gradient(135deg,var(--blue),var(--cyan));
-  color:#fff;box-shadow:0 4px 20px rgba(58,142,245,0.35);
-  transition:transform .1s;
-}
-.jk-next-btn:active{transform:scale(0.97);}
-
-/* フェーズB – 公開 */
-.jk-reveal-title{
-  font-family:'Black Han Sans',sans-serif;font-size:1.6rem;
-  text-align:center;margin-bottom:18px;
-  background:linear-gradient(135deg,var(--fire),var(--gold));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
-}
-.jk-players{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
-.jk-player{
-  display:flex;align-items:center;justify-content:space-between;
-  background:var(--card2);border:1px solid var(--border);
-  border-radius:10px;padding:12px 16px;font-size:0.88rem;
-  transition:border-color .3s,background .3s;
-}
-.jk-player.reveal-anim{animation:revealPop .4s cubic-bezier(0.175,0.885,0.32,1.275);}
-@keyframes revealPop{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
-.jk-hand{font-size:1.6rem;transition:all .3s;}
-.jk-hand.hidden-hand{filter:blur(8px);opacity:0.3;}
-.jk-result-badge{padding:2px 10px;border-radius:20px;font-size:0.7rem;font-weight:700;}
-.jk-result-badge.loser{background:rgba(231,76,60,0.2);color:var(--red);}
-.jk-result-badge.winner{background:rgba(46,204,113,0.2);color:var(--green);}
-.jk-result-badge.aiko{background:rgba(245,200,66,0.2);color:var(--gold);}
-
 /* ── ROULETTE ── */
 #rouletteScreen{
   display:flex;flex-direction:column;align-items:center;
@@ -812,15 +725,12 @@ const state = {
   people: 4,
   names: [],
   roles: [],        // '' | 'host' | 'new' | 'women'
-  mode: null,       // 'normal' | 'otoko' | 'jk' | 'roulette'
+  mode: null,       // 'normal' | 'otoko' | 'amida' | 'roulette' | 'percent'
   otokoType: null,  // 'full' | 'half' | 'plus' | 'multi'
   extra: 0,
-  method: null,     // 'random' | 'jk' | 'roulette'
+  method: null,     // 'random' | 'amida' | 'roulette'
   heroIdx: null,    // 男気担当
   hero2Idx: null,   // 2人目男気
-  jkRound: 1,
-  jkHands: {},      // {playerIdx: hand}
-  jkLoser: null,
   loserPct: 50,     // あみだ/ルーレット 負け人の負担率(%)
 };
 
@@ -1604,12 +1514,12 @@ function drawAmidaDramatic(allPaths, loserIdxs, phase) {
     ctx.shadowBlur = 0;
   }
 
-  // 下段ラベル
+  // 下段ラベル（amidaHazureBottomsは「下の列番号」なので正確な位置に描ける）
   for (let i = 0; i < n; i++) {
-    const isLoser = loserIdxs.includes(i);
+    const isLoserBottom = amidaHazureBottoms.includes(i);
     const y = rowY(amidaRows) + 20;
     ctx.textAlign = 'center';
-    if (isLoser) {
+    if (isLoserBottom) {
       ctx.font = `bold ${Math.min(14, Math.floor(180/n))}px Noto Sans JP`;
       ctx.fillStyle = '#ff4e00';
       ctx.shadowBlur = 14; ctx.shadowColor = '#ff4e00';
