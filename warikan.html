@@ -33,6 +33,7 @@ body{
   color:var(--text);
   display:flex;flex-direction:column;
   align-items:center;
+  height:100vh; /* fallback */
   height:100dvh;
   user-select:none;
   position:relative;
@@ -41,6 +42,7 @@ body{
 #appShell{
   display:flex;flex-direction:column;
   width:100%;
+  height:100vh; /* fallback */
   height:100dvh;
   overflow:hidden;
   position:relative;
@@ -559,12 +561,12 @@ hr.divider{border:none;border-top:1px solid var(--border);margin:14px 0;}
   body {
     position: relative;
   }
-  /* Outer frame */
   #appShell {
     display: flex;
     flex-direction: column;
     width: 100%;
     max-width: 480px;
+    height: 100vh;
     height: 100dvh;
     background: var(--bg);
     border-left: 1px solid var(--border);
